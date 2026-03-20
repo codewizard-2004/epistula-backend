@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from config import get_settings
 
+from langchain_google_genai import ChatGoogleGenerativeAI
+
 settings = get_settings()
 
 """
@@ -14,6 +16,11 @@ We can use this function to perform any setup or teardown tasks like connecting 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("SERVER: Connecting to the database...")
+    app.state.llm = ChatGoogleGenerativeAI(
+        model = "models/gemini-3-flash-preview",
+        api_key = settings.google_api
+    )
+    print("SERVER: Initialized LLM instance...")
     print("SERVER: Epistula server starting...\n")
     yield
     print("SERVER: Disconnecting from the database...")
@@ -51,3 +58,4 @@ async def root():
         "app": "Epistula AI",
         "version": settings.app_version
     }
+

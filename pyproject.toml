@@ -6,8 +6,15 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "fastapi>=0.135.1",
+    "langchain>=1.2.12",
+    "langchain-community>=0.4.1",
+    "langchain-google-genai>=4.2.1",
+    "langchain-pymupdf4llm>=0.5.0",
     "pydantic>=2.12.5",
     "pydantic-settings>=2.13.1",
+    "pymupdf-layout>=1.27.2.2",
+    "pymupdf4llm>=0.1.9",
+    "pypdf>=6.9.1",
     "python-dotenv>=1.2.2",
     "python-multipart>=0.0.22",
     "uvicorn>=0.42.0",
