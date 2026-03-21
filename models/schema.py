@@ -39,3 +39,8 @@ class ATSResponse(BaseModel):
     score: int = Field(description="The score indicating how well the resume is optimized for ATS", ge=0, le=100, examples=[80, 85, 90])
     issues: List[str] = Field(description="The list of issues that are affecting the resume's ATS optimization", examples=["Missing keywords", "Unusual formatting", "Lack of section headers"])
     suggestions: List[str] = Field(description="The list of suggestions to improve the resume's ATS optimization", examples=["Add relevant keywords from the job description", "Use standard section headers like 'Experience' and 'Education'", "Avoid using tables and graphics in your resume"])
+
+class ParallelParsingOutput(BaseModel):
+    parsed_jd: JobDescription
+    parsed_resume: Resume
+    raw_resume: str
