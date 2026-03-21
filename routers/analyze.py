@@ -4,22 +4,45 @@ THIS FILE WILL CONTAIN FUNCTIONS TO
 2) ANALYZE THE RESUME'S ATS FRIENDLINESS
 """
 
-from fastapi import APIRouter, HTTPException, File, UploadFile
+from fastapi import APIRouter, HTTPException, File, UploadFile, Request
 from models.schema import JobDescription, Resume, MatchingResponse, ATSResponse
 #from services.chains import parse_jobdescription, parse_resume, analyze_match, check_ats
-from services.chains import run_generation_pipeline
+from services.chains import parsing_in_parallel, analysis_in_parallel
+from pydantic import BaseModel
 
 router = APIRouter(
-    prefix="/analyze",
+    prefix="/api/analyze",
     tags=["Analyze"]
 )
 
-# This endpoint will take the resume and job description as input in json format and will return the result of matching and ats check
-@router.post("/", response_model=MatchingResponse)
-async def analyze_matching(job_description: str, resume: UploadFile = File(...)):
+class AnalyzeRequest(BaseModel):
+    parsed_jd: JobDescription
+    parsed_resume: Resume
+    raw_resume: str
+
+class AnalyzeResponse(BaseModel):
+    match_analysis: MatchingResponse
+    ats_result: ATSResponse
+
+@router.post("/", response_model=AnalyzeResponse)
+async def analyze(body: AnalyzeRequest, request: Request):
     """
-    1) This endpoint will take the resume as file and job description as string
-    2) converts the resume file to text
-    3) runs the generation pipeline to get matching response and ats response
+    Step 2 — Run match analysis + ATS check in parallel.
+    Called after the user reviews / edits the parsed output and clicks Confirm.
+    The request body is just the (possibly edited) ParseResponse + raw_resume.
     """
-    pass
+ 
+    try:
+        result = analysis_in_parallel(
+            llm = request.app.state.google_llm,
+            job_desc=body.parsed_jd,
+            resume=body.parsed_resume,
+            raw_resume=body.raw_resume,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {e}")
+ 
+    return AnalyzeResponse(
+        match_analysis=result["matching_analysis"],
+        ats_result=result["ats_result"],
+    )
