@@ -20,7 +20,7 @@ class ParseResponse(BaseModel):
 
 router = APIRouter(prefix="/api/parse", tags=["Resume Parser"])
 
-@router.post("/parse", response_model=ParseResponse)
+@router.post("/", response_model=ParseResponse)
 async def parse(
     request: Request,
     resume_file: UploadFile = File(...),          # PDF or .txt upload

@@ -22,7 +22,7 @@ We can use this function to perform any setup or teardown tasks like connecting 
 async def lifespan(app: FastAPI):
     print("SERVER: Connecting to the database...")
     app.state.google_llm = ChatGoogleGenerativeAI(
-        model = "models/gemini-3-flash-preview",
+        model = settings.gemini_model,
         api_key = settings.google_api
     )
     app.state.openrouter_llm = ChatOpenRouter(
