@@ -16,6 +16,12 @@ class GenerateRequest(BaseModel):
     matching_analysis: MatchingResponse
     tone: str = "Professional"
     generate_email: bool = False
+
+class GenerateRequestV1(BaseModel):
+    parsed_jd: JobDescription
+    parsed_resume: Resume
+    tone: str = "Professional"
+    generate_email: bool = False
  
  
 class GenerateResponse(BaseModel):
@@ -23,7 +29,7 @@ class GenerateResponse(BaseModel):
     cover_email: str | None = None
 
 router = APIRouter(
-    prefix="/api/generate",
+    prefix="/api",
     tags=["Generate"]
 )
 
@@ -56,3 +62,41 @@ async def generate(body: GenerateRequest, request: Request):
         raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
  
     return GenerateResponse(cover_letter=cover_letter, cover_email=cover_email)
+
+@router.post("/v1/generate", response_model = GenerateResponse)
+async def generate_v1(body: GenerateRequestV1, request: Request):
+    """
+    This endpoint is used to directly perform cover letter generation directly without performing analysis.
+    It works by parsing the job description and resume and straight to generation
+    
+    Args:
+        body (GenerateRequestV1): The request body containing the parsed job description, parsed resume and tone.
+        request (Request): The request object.
+    Returns:
+        GenerateResponse: A JSON object containing the generated cover letter and cover email.
+    """
+    try:
+        cover_letter = generate_cover_letter(
+            request.app.state.google_llm,
+            job_desc=body.parsed_jd,
+            resume=body.parsed_resume,
+            match_response = None,
+            tone=body.tone,
+        )
+ 
+        cover_email = None
+        if body.generate_email:
+            cover_email = generate_cover_email(
+                request.app.state.google_llm,
+                job_desc=body.parsed_jd,
+                resume=body.parsed_resume,
+                match_response = None,
+            )
+ 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
+ 
+    return GenerateResponse(cover_letter=cover_letter, cover_email=cover_email)
+
+    
+    

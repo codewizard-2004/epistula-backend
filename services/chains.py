@@ -122,7 +122,10 @@ def generate_cover_letter(llm, job_desc: JobDescription, resume: Resume, match_r
 
     query1 = HumanMessage(content=job_desc.model_dump_json(indent=2))
     query2 = HumanMessage(content = resume.model_dump_json(indent=2))
-    query3 = HumanMessage(content = match_response.model_dump_json(indent=2))
+    if match_response:
+        query3 = HumanMessage(content = match_response.model_dump_json(indent=2))
+    else:
+        query3 = HumanMessage(content = "No match response provided, generate a cover letter based on the job description and resume provided.")
     query4 = HumanMessage(content = f"The tone of the cover letter should be {tone} tone")
 
     response = agent.invoke({

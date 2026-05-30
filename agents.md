@@ -24,7 +24,7 @@ The system uses a sequential, multi-step pipeline where each step is handled by 
 
 1. **Parse (`/api/parse/`)**: Extract structured data from raw Resume PDFs and Job Description text.
 2. **Analyze (`/api/analyze/`)**: Compare the parsed Resume against the parsed Job Description to calculate match scores and ATS readiness.
-3. **Generate (`/api/generate/generate`)**: Create tailored artifacts (Cover Letters and Emails) using the analysis results.
+3. **Generate (`/api/generate` and `/api/v1/generate`)**: Create tailored artifacts (Cover Letters and Emails) using the parsed data, and optionally analysis results.
 
 ## 🔌 API Endpoints
 
@@ -111,16 +111,17 @@ Analyzes the match between the resume and job description, and checks ATS friend
 }
 ```
 
-### 3. Generation Router (`/api/generate/generate`)
-Generates tailored cover letters and emails based on the analysis.
+### 3. Generation Router (`/api/generate` and `/api/v1/generate`)
+Generates tailored cover letters and emails based on the parsed data and optionally the analysis.
+
+#### Endpoint: `/api/generate`
+Uses the match analysis results to generate highly tailored artifacts.
 
 - **Method**: `POST`
 - **Request Model**: `GenerateRequest`
   - Requires `parsed_jd` (JobDescription), `parsed_resume` (Resume), `matching_analysis` (MatchingResponse).
   - Optional: `tone` (string, default "Professional"), and `generate_email` (boolean, default False).
 - **Response Model**: `GenerateResponse`
-  - `cover_letter`: string
-  - `cover_email`: string | null
 
 **Example Request (JSON)**
 ```json
@@ -133,7 +134,26 @@ Generates tailored cover letters and emails based on the analysis.
 }
 ```
 
-**Example Response (JSON)**
+#### Endpoint: `/api/v1/generate` (Direct Generation)
+Generates the cover letter directly from the parsed Job Description and Resume, bypassing the match analysis step.
+
+- **Method**: `POST`
+- **Request Model**: `GenerateRequestV1`
+  - Requires `parsed_jd` (JobDescription), `parsed_resume` (Resume).
+  - Optional: `tone` (string, default "Professional"), and `generate_email` (boolean, default False).
+- **Response Model**: `GenerateResponse`
+
+**Example Request (JSON)**
+```json
+{
+  "parsed_jd": { /* JobDescription Object */ },
+  "parsed_resume": { /* Resume Object */ },
+  "tone": "Professional",
+  "generate_email": true
+}
+```
+
+**Example Response (JSON) (For both endpoints)**
 ```json
 {
   "cover_letter": "Dear Hiring Manager,\n\nI am writing to express my interest in the Python Developer position...",
