@@ -7,11 +7,12 @@ THIS WILL CONTAIN ALL THE LANGCHAIN PIPELINES
 5) SCRAPPING
 """
 
+from services.prompts import IS_JOB_DESCRIPTION_PROMPT
 from pydantic import BaseModel
 from langchain.agents import create_agent
 from langchain.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
-from services.prompts import JD_PARSER_PROMPT, RESUME_PARSER_PROMPT, MATCH_ANALYZER_PROMPT, ATS_CHECKER_PROMPT, COVER_LETTER_GENERATOR_PROMPT, COVER_EMAIL_GENERATOR_PROMPT
+from services.prompts import JD_PARSER_PROMPT, RESUME_PARSER_PROMPT, MATCH_ANALYZER_PROMPT, ATS_CHECKER_PROMPT, COVER_LETTER_GENERATOR_PROMPT, COVER_EMAIL_GENERATOR_PROMPT, IS_RESUME_PROMPT
 from models.schema import JobDescription, Resume, MatchingResponse, ATSResponse, ParallelParsingOutput
 from langchain_core.runnables import RunnableLambda, RunnableParallel
 
@@ -252,5 +253,30 @@ def analysis_in_parallel(llm, job_desc: JobDescription, resume: Resume, raw_resu
 
     return response
 
-def extract_job_search_query():
-    pass
+class IsResumeResponse(BaseModel):
+    is_resume: bool
+
+def check_is_resume(llm, resume_text: str) -> bool:
+    agent = create_agent(
+        model = llm,
+        system_prompt = IS_RESUME_PROMPT,
+        response_format = IsResumeResponse
+    )   
+    query = HumanMessage(content = resume_text)
+    response = agent.invoke({
+        "messages": [query]
+    })
+    return response['structured_response'].is_resume
+
+
+def check_is_job_description(llm, job_desc: str) -> bool:
+    agent = create_agent(
+        model = llm,
+        system_prompt = IS_JOB_DESCRIPTION_PROMPT,
+        response_format = IsResumeResponse
+    )   
+    query = HumanMessage(content = job_desc)
+    response = agent.invoke({
+        "messages": [query]
+    })
+    return response['structured_response'].is_resume

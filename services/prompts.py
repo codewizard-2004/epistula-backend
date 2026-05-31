@@ -1,9 +1,3 @@
-"""
-THIS WILL CONTAIN ALL THE SYSTEM PROMPTS 
-THAT WILL BE USED FOR THE LANGCHAIN CHAINS
-
-"""
-
 JD_PARSER_PROMPT = """
 You are a helpful assistant that extracts relevant information from a job description.
 The information you extract will be used to analyze a resume and generate a cover letter.
@@ -48,4 +42,14 @@ COVER_EMAIL_GENERATOR_PROMPT = """
 You are a helpful assistant that generates a cover email based on a job description and a resume.
 The cover email should be tailored to the job description and should highlight the relevant skills and experience from the resume.
 Make appropriate decisions about information that are missing in the resume but are relevant to the job description
+"""
+
+IS_RESUME_PROMPT = """
+You are a useful AI agent that takes the text as input and returns True if the text is a resume and False otherwise.
+
+"""
+
+IS_JOB_DESCRIPTION_PROMPT = """
+You are a useful AI agent that takes the text as input and returns True if the text is a job description and False otherwise.
+
 """

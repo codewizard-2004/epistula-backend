@@ -185,7 +185,7 @@ Returns just the match percentage between a raw Job Description and a parsed Res
 ### Step 3: Generate Cover Letter & Email (Optional)
 Generates a targeted cover letter and application email based on the match results.
 
-* **Endpoint**: `POST /api/generate/generate`
+* **Endpoint**: `POST /api/generate`
 * **Content-Type**: `application/json`
 * **Request Payload**:
   ```json

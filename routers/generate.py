@@ -1,32 +1,6 @@
-"""
-THIS FILE WILL CONTAIN FUNCTIONS TO
-1) GENERATE COVER LETTER AND EMAIL
-
-"""
-
-from fastapi import APIRouter, HTTPException, File, UploadFile, Request
-from models.schema import JobDescription, Resume, MatchingResponse, ATSResponse
-#from services.chains import parse_jobdescription, parse_resume, analyze_match, check_ats
+from fastapi import APIRouter, HTTPException, Request
 from services.chains import generate_cover_letter, generate_cover_email
-from pydantic import BaseModel
-
-class GenerateRequest(BaseModel):
-    parsed_jd: JobDescription
-    parsed_resume: Resume
-    matching_analysis: MatchingResponse
-    tone: str = "Professional"
-    generate_email: bool = False
-
-class GenerateRequestV1(BaseModel):
-    parsed_jd: JobDescription
-    parsed_resume: Resume
-    tone: str = "Professional"
-    generate_email: bool = False
- 
- 
-class GenerateResponse(BaseModel):
-    cover_letter: str
-    cover_email: str | None = None
+from models.generate_models import GenerateRequest, GenerateResponse, GenerateRequestV1
 
 router = APIRouter(
     prefix="/api",

@@ -44,3 +44,18 @@ class ParallelParsingOutput(BaseModel):
     parsed_jd: JobDescription
     parsed_resume: Resume
     raw_resume: str
+
+class ParseResponse(BaseModel):
+    """Returned after parallel parsing — sent to the UI for user review."""
+    parsed_jd: JobDescription
+    parsed_resume: Resume
+    raw_resume: str   
+
+class SearchJobRequest(BaseModel):
+    query: str
+    country: str = "in"
+    city: str | None = None
+    employment_types: List[str] = ["FULLTIME"]
+    min_salary: int = 0
+    page: int = 1
+    num_pages: int = 1

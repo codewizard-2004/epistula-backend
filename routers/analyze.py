@@ -1,29 +1,11 @@
-"""
-THIS FILE WILL CONTAIN FUNCTIONS TO
-1) ANALYZE THE RESUME WITH JOB DESCRIPTION
-2) ANALYZE THE RESUME'S ATS FRIENDLINESS
-"""
-
-from fastapi import APIRouter, HTTPException, File, UploadFile, Request
-from models.schema import JobDescription, Resume, MatchingResponse, ATSResponse
-#from services.chains import parse_jobdescription, parse_resume, analyze_match, check_ats
-from services.chains import parsing_in_parallel, analysis_in_parallel
-from pydantic import BaseModel
-from services.chains import parse_job_description, quick_analyze_match
+from fastapi import APIRouter, HTTPException, Request
+from models.analyze_models import AnalyzeRequest, AnalyzeResponse, MatchingRequest, MatchingResponse
+from services.chains import analysis_in_parallel, parse_job_description, quick_analyze_match
 
 router = APIRouter(
     prefix="/api/analyze",
     tags=["Analyze"]
 )
-
-class AnalyzeRequest(BaseModel):
-    parsed_jd: JobDescription
-    parsed_resume: Resume
-    raw_resume: str
-
-class AnalyzeResponse(BaseModel):
-    match_analysis: MatchingResponse
-    ats_result: ATSResponse
 
 @router.post("/", response_model=AnalyzeResponse)
 async def analyze(body: AnalyzeRequest, request: Request):
@@ -47,14 +29,6 @@ async def analyze(body: AnalyzeRequest, request: Request):
         match_analysis=result["matching_analysis"],
         ats_result=result["ats_result"],
     )
-
-class MatchingRequest(BaseModel):
-    jd: str
-    parsed_resume: Resume
-
-class MatchingResponse(BaseModel):
-    status: str
-    matching_percentage: int
 
 @router.post("/matching", response_model = MatchingResponse)
 async def matching(body: MatchingRequest, request: Request):
