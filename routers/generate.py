@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Request
-from services.chains import generate_cover_letter, generate_cover_email
+from agents.generation.chains import generate_cover_letter, generate_cover_email
 from models.generate_models import GenerateRequest, GenerateResponse, GenerateRequestV1
 
 router = APIRouter(

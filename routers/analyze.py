@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from models.analyze_models import AnalyzeRequest, AnalyzeResponse, MatchingRequest, MatchingResponse
-from services.chains import analysis_in_parallel, parse_job_description, quick_analyze_match
+from agents.analysis.chains import analysis_in_parallel, quick_analyze_match
+from agents.extraction.chains import parse_job_description
 
 router = APIRouter(
     prefix="/api/analyze",

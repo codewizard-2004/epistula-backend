@@ -1,7 +1,7 @@
-from services.chains import check_is_job_description
+from agents.verify.chains import check_is_job_description, check_is_resume
 from fastapi import APIRouter, HTTPException, File,Form, UploadFile, Request
 from models.schema import Resume
-from services.chains import parsing_in_parallel, parse_resume, check_is_resume
+from agents.extraction.chains import parsing_in_parallel, parse_resume
 import io
 from pypdf import PdfReader
 from models.schema import ParseResponse    

@@ -17,3 +17,6 @@ class MatchingRequest(BaseModel):
 class MatchingResponse(BaseModel):
     status: str
     matching_percentage: int
+
+class QuickMatchingResponse(BaseModel):
+    matching_percentage: int

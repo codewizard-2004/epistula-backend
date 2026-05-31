@@ -59,3 +59,6 @@ class SearchJobRequest(BaseModel):
     min_salary: int = 0
     page: int = 1
     num_pages: int = 1
+
+class IsResumeResponse(BaseModel):
+    is_resume: bool

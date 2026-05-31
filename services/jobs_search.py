@@ -1,13 +1,3 @@
-"""
-This file will contain job search implementation using bright data api and langchain
-Workflow:
-    1. User will upload the resume
-    2. We will parse the resume using the parse_resume agent in chains, target role, location, min salary
-    3. Create an agent which will use bright data api to search based on resume
-        3.1. Tool for agent to use brightdata api
-        3.2. System prompt for the agent.
-
-"""
 import os
 from dotenv import load_dotenv
 import requests
