@@ -102,6 +102,8 @@ Extracts structured JSON data from a raw PDF resume and job description text.
 ---
 
 ### Step 2: Analyze Match & ATS Compatibility
+
+#### Comprehensive Analysis
 Computes match score, identifies keyword/skill gaps, and scores ATS optimization.
 
 * **Endpoint**: `POST /api/analyze/`
@@ -153,6 +155,31 @@ Computes match score, identifies keyword/skill gaps, and scores ATS optimization
   }
   ```
 
+#### Quick Matching
+Returns just the match percentage between a raw Job Description and a parsed Resume.
+
+* **Endpoint**: `POST /api/analyze/matching`
+* **Content-Type**: `application/json`
+* **Request Payload**:
+  ```json
+  {
+    "jd": "Software Engineer role...",
+    "parsed_resume": { 
+      "name": "Amal Varghese",
+      "email": "amal@example.com",
+      "experience": 2,
+      "skills": ["Python", "FastAPI"]
+    }
+  }
+  ```
+* **Example Response**:
+  ```json
+  {
+    "status": "success",
+    "matching_percentage": 85
+  }
+  ```
+
 ---
 
 ### Step 3: Generate Cover Letter & Email (Optional)
@@ -182,6 +209,27 @@ Generates a targeted cover letter and application email based on the match resul
     "cover_email": "Subject: Job Application: Amal Varghese\n\nDear Team..."
   }
   ```
+
+---
+
+### Step 4: Search Jobs
+Searches for relevant jobs based on a query using the Rapid API JSearch integration.
+
+* **Endpoint**: `POST /api/jobs/search`
+* **Content-Type**: `application/json`
+* **Request Payload**:
+  ```json
+  {
+    "query": "Software Engineer",
+    "country": "in",
+    "city": "Bangalore",
+    "employment_types": ["FULLTIME"],
+    "min_salary": 100000,
+    "page": 1,
+    "num_pages": 1
+  }
+  ```
+* **Example Response**: Returns a JSON object with the matching job listings from the API.
 
 ---
 

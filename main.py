@@ -6,9 +6,12 @@ from config import get_settings
 from routers.extract import router as extract_router
 from routers.analyze import router as analyze_router
 from routers.generate import router as generate_router
+from routers.jobs import router as jobs_router
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openrouter import ChatOpenRouter
+
+from services.llm import llm_gemini
 
 settings = get_settings()
 
@@ -21,13 +24,7 @@ We can use this function to perform any setup or teardown tasks like connecting 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("SERVER: Connecting to the database...")
-    app.state.google_llm = ChatGoogleGenerativeAI(
-        model = settings.gemini_model,
-        api_key = settings.google_api
-    )
-    app.state.openrouter_llm = ChatOpenRouter(
-        model = "gpt-4o-mini",
-        api_key = settings.openrouter_api)#type: ignore
+    app.state.google_llm = llm_gemini
     print("SERVER: Initialized LLM instance...")
     print("SERVER: Epistula server starting...\n")
     yield
@@ -71,4 +68,5 @@ async def root():
 app.include_router(extract_router)
 app.include_router(analyze_router)
 app.include_router(generate_router)
+app.include_router(jobs_router)
 

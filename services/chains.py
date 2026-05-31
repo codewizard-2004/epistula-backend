@@ -7,6 +7,7 @@ THIS WILL CONTAIN ALL THE LANGCHAIN PIPELINES
 5) SCRAPPING
 """
 
+from pydantic import BaseModel
 from langchain.agents import create_agent
 from langchain.messages import HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -80,6 +81,35 @@ def analyze_match(llm, job_desc: JobDescription, resume: Resume) -> MatchingResp
     })
 
     return response['structured_response']
+
+class QuickMatchingResponse(BaseModel):
+    matching_percentage: int
+    
+
+def quick_analyze_match(llm, job_desc: JobDescription, resume: Resume) -> int:
+    """
+    This agent will take the job description and resume in json format and analyze how well the resume matches the job description.
+    
+    Args:
+        llm: The language model instance to use for analysis.
+        job_desc (JobDescription)
+        resume (Resume)
+    Return:
+        int: The matching percentage.
+    """
+    agent = create_agent(
+        model = llm,
+        system_prompt = "You are a useful AI agent that takes the parsed information from resume and parsed information from job description as input and returns only the matching percentage between them in integer format.",
+        response_format = QuickMatchingResponse
+    )
+
+    query1 = HumanMessage(content = job_desc.model_dump_json(indent=2))
+    query2 = HumanMessage(content = resume.model_dump_json(indent=2))
+    response = agent.invoke({
+        "messages": [query1, query2]
+    })
+
+    return response['structured_response'].matching_percentage
 
 def check_ats(llm, resume: str) -> ATSResponse:
     """

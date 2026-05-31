@@ -11,6 +11,7 @@ class Settings:
     google_api: Optional[str] = os.getenv("GOOGLE_API_KEY")
     openrouter_api: Optional[str] = os.getenv("OPENROUTER_API_KEY")
     gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+    ollama_model: str = os.getenv("OLLAMA_MODEL", "qwen3.5:4b")
 
 
     cors_origins: list[str] = ["*"]

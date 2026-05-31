@@ -13,7 +13,7 @@ The backend is built with FastAPI and organized into several key directories:
   - `extract.py`: Endpoints for parsing Resumes and Job Descriptions.
   - `analyze.py`: Endpoints for matching analysis and ATS scoring.
   - `generate.py`: Endpoints for generating cover letters and emails.
-  - `jobs.py`: Placeholder for job search integration.
+  - `jobs.py`: Endpoints for job search integration.
 - `services/`: Contains the core business logic and AI agents.
   - `chains.py`: Defines the Langchain agents and parallel execution pipelines.
   - `prompts.py`: Stores the system prompts used by the Langchain agents.
@@ -76,6 +76,7 @@ Extracts structured information from a user's resume and a given job description
 ```
 
 ### 2. Analysis Router (`/api/analyze/`)
+#### Endpoint: `/api/analyze/`
 Analyzes the match between the resume and job description, and checks ATS friendliness.
 
 - **Method**: `POST`
@@ -108,6 +109,30 @@ Analyzes the match between the resume and job description, and checks ATS friend
     "issues": ["Missing keywords: Cloud Architecture"],
     "suggestions": ["Include exact keyword 'Cloud Architecture' under skills."]
   }
+}
+```
+
+#### Endpoint: `/api/analyze/matching`
+A quick analysis endpoint that takes a raw job description and parsed resume, returning just the match percentage.
+
+- **Method**: `POST`
+- **Request Model**: `MatchingRequest`
+  - Requires `jd` (string, raw job description text), `parsed_resume` (Resume).
+- **Response Model**: `MatchingResponse`
+
+**Example Request (JSON)**
+```json
+{
+  "jd": "We are looking for a Python Developer...",
+  "parsed_resume": { /* Resume Object */ }
+}
+```
+
+**Example Response (JSON)**
+```json
+{
+  "status": "success",
+  "matching_percentage": 85
 }
 ```
 
@@ -161,6 +186,31 @@ Generates the cover letter directly from the parsed Job Description and Resume, 
 }
 ```
 
+### 4. Jobs Router (`/api/jobs/`)
+Handles job search integration via Rapid API / JSearch API.
+
+#### Endpoint: `/api/jobs/search`
+Searches for jobs based on a query and various filters.
+
+- **Method**: `POST`
+- **Request Model**: `SearchJobRequest`
+  - Requires `query` (string).
+  - Optional: `country` (string, default "in"), `city` (string), `employment_types` (List[str], default ["FULLTIME"]), `min_salary` (int, default 0), `page` (int, default 1), `num_pages` (int, default 1).
+- **Response Model**: `dict` (JSON results from JSearch API)
+
+**Example Request (JSON)**
+```json
+{
+  "query": "Software Engineer",
+  "country": "in",
+  "city": "Bangalore",
+  "employment_types": ["FULLTIME"],
+  "min_salary": 100000,
+  "page": 1,
+  "num_pages": 1
+}
+```
+
 ## 🧠 Langchain Agents & Chains (`services/chains.py`)
 
 The application leverages several specialized agents, utilizing `ChatGoogleGenerativeAI` and `langchain.agents.create_agent`:
@@ -168,6 +218,7 @@ The application leverages several specialized agents, utilizing `ChatGoogleGener
 - `parse_job_description`: Parses raw text into a `JobDescription` object.
 - `parse_resume`: Parses raw resume text into a `Resume` object.
 - `analyze_match`: Compares `JobDescription` and `Resume` to output a `MatchingResponse`.
+- `quick_analyze_match`: Quickly compares a raw JD text and `Resume` to output a match percentage.
 - `check_ats`: Evaluates raw resume text for ATS optimization, returning an `ATSResponse`.
 - `generate_cover_letter`: Uses JD, Resume, and Match Analysis to draft a tailored cover letter.
 - `generate_cover_email`: Uses JD, Resume, and Match Analysis to draft a tailored email.
@@ -212,3 +263,16 @@ Here are the primary Pydantic models used for input validation and structured LL
 - `score` (int): 0-100 ATS optimization score.
 - `issues` (List[str]): Identified ATS parsing problems.
 - `suggestions` (List[str]): Advice to improve ATS formatting.
+
+**`MatchingRequest` & `MatchingResponse`**
+- `MatchingRequest`: Contains `jd` (str) and `parsed_resume` (`Resume`).
+- `MatchingResponse`: Contains `status` (str) and `matching_percentage` (int).
+
+**`SearchJobRequest`**
+- `query` (str): Search query.
+- `country` (str): Country code.
+- `city` (Optional[str]): City name.
+- `employment_types` (List[str]): List of employment types.
+- `min_salary` (int): Minimum salary.
+- `page` (int): Page number.
+- `num_pages` (int): Number of pages to fetch.
