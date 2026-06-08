@@ -1,3 +1,5 @@
+from utils.auth import verify_jwt
+from fastapi import Depends
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -12,6 +14,11 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openrouter import ChatOpenRouter
 
 from services.llm import llm_gemini
+
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from utils.limiter import limiter
+from fastapi import Request
 
 settings = get_settings()
 
@@ -39,6 +46,9 @@ app = FastAPI(
     lifespan = lifespan
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 """
 Cross Origin Resource Sharing is a browser security mechanism that blocks web pages from making resquests to a different domain than the one that served the page.
 We need to add the domain of vercel after hosting the frontend
@@ -56,8 +66,9 @@ app.add_middleware(
 Tags are used to group endpoints in the documentation.
 We can use them to group endpoints by functionality or by resource.
 """
-@app.get("/", tags = ["Health"])
-async def root():
+@app.get("/", tags = ["Health"], dependencies=[Depends(verify_jwt)])
+@limiter.limit("1/second")
+async def root(request: Request):
     return {
         "status": "ok",
         "app": "Epistula AI",

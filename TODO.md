@@ -5,5 +5,5 @@
 * [✔] Implement job search api using Rapid api
 * [✔] Implement safety checking for is_resume and is_job_description
 * [ ] Implement caching for job api calls
-* [ ] Implement headers in for authentication using jwt token
+* [✔] Implement headers in for authentication using jwt token
 * [ ] Implement Rate Limiting for user API calls

@@ -1,14 +1,21 @@
 from agents.verify.chains import check_is_job_description, check_is_resume
-from fastapi import APIRouter, HTTPException, File,Form, UploadFile, Request
+from fastapi import APIRouter, HTTPException, File, Form, UploadFile, Request, Depends
+from utils.auth import verify_jwt
+from utils.limiter import limiter
 from models.schema import Resume
 from agents.extraction.chains import parsing_in_parallel, parse_resume
 import io
 from pypdf import PdfReader
 from models.schema import ParseResponse    
 
-router = APIRouter(prefix="/api/parse", tags=["Resume Parser"])
+router = APIRouter(
+    prefix="/api/parse", 
+    tags=["Resume Parser"],
+    dependencies=[Depends(verify_jwt)]
+)
 
 @router.post("/", response_model=ParseResponse)
+@limiter.limit("5/minute")
 async def parse(
     request: Request,
     resume_file: UploadFile = File(...),          # PDF or .txt upload
@@ -50,6 +57,7 @@ async def parse(
     )
 
 @router.post("/resume", response_model = Resume)
+@limiter.limit("5/minute")
 async def parse_resume_only(
     request: Request,
     resume_file: UploadFile = File(...)

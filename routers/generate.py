@@ -1,13 +1,17 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
+from utils.auth import verify_jwt
+from utils.limiter import limiter
 from agents.generation.chains import generate_cover_letter, generate_cover_email
 from models.generate_models import GenerateRequest, GenerateResponse, GenerateRequestV1
 
 router = APIRouter(
     prefix="/api",
-    tags=["Generate"]
+    tags=["Generate"],
+    dependencies=[Depends(verify_jwt)]
 )
 
 @router.post("/generate", response_model=GenerateResponse)
+@limiter.limit("5/minute")
 async def generate(body: GenerateRequest, request: Request):
     """
     Step 3 (optional) — Generate cover letter and/or cover email.
@@ -38,6 +42,7 @@ async def generate(body: GenerateRequest, request: Request):
     return GenerateResponse(cover_letter=cover_letter, cover_email=cover_email)
 
 @router.post("/v1/generate", response_model = GenerateResponse)
+@limiter.limit("5/minute")
 async def generate_v1(body: GenerateRequestV1, request: Request):
     """
     This endpoint is used to directly perform cover letter generation directly without performing analysis.

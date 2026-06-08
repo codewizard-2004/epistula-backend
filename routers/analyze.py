@@ -1,14 +1,18 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
+from utils.auth import verify_jwt
+from utils.limiter import limiter
 from models.analyze_models import AnalyzeRequest, AnalyzeResponse, MatchingRequest, MatchingResponse
 from agents.analysis.chains import analysis_in_parallel, quick_analyze_match
 from agents.extraction.chains import parse_job_description
 
 router = APIRouter(
     prefix="/api/analyze",
-    tags=["Analyze"]
+    tags=["Analyze"],
+    dependencies=[Depends(verify_jwt)]
 )
 
 @router.post("/", response_model=AnalyzeResponse)
+@limiter.limit("5/minute")
 async def analyze(body: AnalyzeRequest, request: Request):
     """
     Step 2 — Run match analysis + ATS check in parallel.
@@ -32,6 +36,7 @@ async def analyze(body: AnalyzeRequest, request: Request):
     )
 
 @router.post("/matching", response_model = MatchingResponse)
+@limiter.limit("5/minute")
 async def matching(body: MatchingRequest, request: Request):
     """
     1. This endpoint will take the pasred resume and job description as input

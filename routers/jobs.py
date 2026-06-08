@@ -1,15 +1,19 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Request
+from utils.auth import verify_jwt
+from utils.limiter import limiter
 from services.jobs_search import search_jobs
 from models.schema import SearchJobRequest
 
 router = APIRouter(
     prefix="/api/jobs",
-    tags=["Jobs"]
+    tags=["Jobs"],
+    dependencies=[Depends(verify_jwt)]
 )
 
 
 @router.post("/search", response_model = dict)
-async def search(body: SearchJobRequest):
+@limiter.limit("10/minute")
+async def search(body: SearchJobRequest, request: Request):
     """
     Search jobs using JSearch API.
 

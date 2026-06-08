@@ -15,6 +15,7 @@
 - **ATS Compatibility Scoring**: Analyzes structural issues, missing keywords, and layout friendliness for Applicant Tracking Systems.
 - **Suitability Matching**: Compares the parsed resume directly with the JD, computing a match percentage, finding skill gaps, and generating recommendations.
 - **Tailored Assets**: Automatically writes a cover letter and a custom introductory email matching the desired tone.
+- **Robust Security**: Features JWT-based per-user rate limiting (supporting both `HS256` and asymmetric `ES256` signing) to protect expensive LLM endpoints.
 
 ---
 
@@ -25,6 +26,7 @@
 - **Models**: Google Gemini (`gemini-3.5-flash` by default), OpenRouter GPT models
 - **PDF Extraction**: `pypdf`, `pymupdf4llm`
 - **Configuration & Validation**: Pydantic v2, `pydantic-settings`
+- **Security & Limiting**: `slowapi`, `PyJWT`, `cryptography`
 - **Dependency Manager**: `uv`
 
 ---
@@ -77,6 +79,20 @@ Once running, the backend server will be available at **`http://localhost:8000`*
 
 - **Interactive API Documentation (Swagger)**: [http://localhost:8000/docs](http://localhost:8000/docs)
 - **Alternative Documentation (Redoc)**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+---
+
+## 🛡️ Security & Rate Limiting
+
+The backend implements robust, per-user rate limiting using `slowapi` and Supabase JWT authentication.
+
+- **Smart Rate Limiting**: Rate limits are applied based on the unique user ID (`sub` claim) extracted from the JWT Bearer token, gracefully falling back to the IP address for unauthenticated requests.
+- **Differentiated Limits**:
+  - `5/minute`: Applied to heavy AI/LLM endpoints (Analyze, Extract, Generate) to prevent abuse and manage API costs.
+  - `10/minute`: Applied to standard data-fetching endpoints like Job Search.
+- **Dynamic JWT Verification**: The authentication middleware automatically detects the JWT signing algorithm from the request header:
+  - Supports standard `HS256` symmetric secrets.
+  - Dynamically fetches the JSON Web Key Set (JWKS) from Supabase to verify modern asymmetric `ES256` signatures securely and seamlessly!
 
 ---
 
