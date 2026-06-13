@@ -10,3 +10,4 @@
 * [ ] Refactor the codebase for better readability
 * [ ] Feature: User based self learning agents
 * [✔] Feature: Prompt for job description
+* [ ] Dockerize the application
