@@ -26,6 +26,10 @@ def verify_jwt(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
         token = credentials.credentials
         
+        # Bypass for development environment
+        if settings.app_env == "DEVELOPMENT" and token == "dev":
+            return {"sub": "dev-user-id", "email": "dev@example.com", "role": "admin"}
+        
         unverified_header = jwt.get_unverified_header(token)
         alg = unverified_header.get("alg")
         

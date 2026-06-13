@@ -6,4 +6,7 @@
 * [✔] Implement safety checking for is_resume and is_job_description
 * [ ] Implement caching for job api calls
 * [✔] Implement headers in for authentication using jwt token
-* [ ] Implement Rate Limiting for user API calls
+* [✔] Implement Rate Limiting for user API calls
+* [ ] Refactor the codebase for better readability
+* [ ] Feature: User based self learning agents
+* [✔] Feature: Prompt for job description

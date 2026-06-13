@@ -51,14 +51,6 @@ class ParseResponse(BaseModel):
     parsed_resume: Resume
     raw_resume: str   
 
-class SearchJobRequest(BaseModel):
-    query: str
-    country: str = "in"
-    city: str | None = None
-    employment_types: List[str] = ["FULLTIME"]
-    min_salary: int = 0
-    page: int = 1
-    num_pages: int = 1
 
 class IsResumeResponse(BaseModel):
     is_resume: bool
