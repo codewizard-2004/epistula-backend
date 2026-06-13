@@ -9,4 +9,4 @@
 * [✔] Implement Rate Limiting for user API calls
 * [ ] Refactor the codebase for better readability
 * [ ] Feature: User based self learning agents
-* [ ] Feature: Prompt for job description
+* [✔] Feature: Prompt for job description
