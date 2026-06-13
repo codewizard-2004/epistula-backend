@@ -26,6 +26,22 @@ The system uses a sequential, multi-step pipeline where each step is handled by 
 2. **Analyze (`/api/analyze/`)**: Compare the parsed Resume against the parsed Job Description to calculate match scores and ATS readiness.
 3. **Generate (`/api/generate` and `/api/v1/generate`)**: Create tailored artifacts (Cover Letters and Emails) using the parsed data, and optionally analysis results.
 
+## 🛡️ Security, Authentication & Rate Limiting
+
+The backend uses a strict security and rate-limiting system designed to protect against abuse, particularly on expensive LLM-based endpoints.
+
+### Authentication
+All routes under `/api/` are protected by Supabase JWT authentication.
+- **Header Required**: `Authorization: Bearer <SUPABASE_JWT_TOKEN>`
+- **Dynamic Verification**: The API automatically detects if the Supabase project uses symmetric (`HS256`) or asymmetric (`ES256`) keys. For asymmetric keys, it seamlessly fetches the public key from the Supabase JWKS endpoint to verify the signature.
+
+### Rate Limiting
+Rate limiting is enforced on a **per-user basis** using the `sub` claim (User ID) from the valid JWT. If an unauthenticated request hits a fallback endpoint, it is rate-limited by IP address.
+- **LLM/AI Endpoints (`/api/parse/*`, `/api/analyze/*`, `/api/generate`, `/api/v1/generate`)**: Limited to **5 requests per minute**.
+- **Standard Endpoints (`/api/jobs/search`)**: Limited to **10 requests per minute**.
+
+*(Note for Frontend Agents: When building the API client, ensure the Supabase session token is always intercepted and passed in the `Authorization` header for all requests.)*
+
 ## 🔌 API Endpoints
 
 ### 1. Parsing Router (`/api/parse/`)
@@ -190,26 +206,23 @@ Generates the cover letter directly from the parsed Job Description and Resume, 
 Handles job search integration via Rapid API / JSearch API.
 
 #### Endpoint: `/api/jobs/search`
-Searches for jobs based on a query and various filters.
+Searches for jobs by taking a natural language prompt, passing it through an LLM to extract parameters, and then hitting the JSearch API.
 
 - **Method**: `POST`
-- **Request Model**: `SearchJobRequest`
-  - Requires `query` (string).
-  - Optional: `country` (string, default "in"), `city` (string), `employment_types` (List[str], default ["FULLTIME"]), `min_salary` (int, default 0), `page` (int, default 1), `num_pages` (int, default 1).
+- **Request Model**: `SearchJobPromptRequest` (from `models/job_models.py`)
+  - Requires `prompt` (string): Natural language description of the job search.
+  - Optional: `page` (int, default 1), `num_pages` (int, default 1).
 - **Response Model**: `dict` (JSON results from JSearch API)
 
 **Example Request (JSON)**
 ```json
 {
-  "query": "Software Engineer",
-  "country": "in",
-  "city": "Bangalore",
-  "employment_types": ["FULLTIME"],
-  "min_salary": 100000,
+  "prompt": "I want an IT job at Bangalore with a minimum salary of 50000 in India",
   "page": 1,
   "num_pages": 1
 }
 ```
+
 
 ## 🧠 Langchain Agents & Chains (`services/chains.py`)
 
@@ -222,6 +235,7 @@ The application leverages several specialized agents, utilizing `ChatGoogleGener
 - `check_ats`: Evaluates raw resume text for ATS optimization, returning an `ATSResponse`.
 - `generate_cover_letter`: Uses JD, Resume, and Match Analysis to draft a tailored cover letter.
 - `generate_cover_email`: Uses JD, Resume, and Match Analysis to draft a tailored email.
+- `parse_job_search_prompt`: Parses a natural language job search prompt into a structured `SearchJobRequest`.
 
 ### Parallel Processing Pipelines
 To optimize performance, certain agents are grouped into parallel runnables using `RunnableParallel`:
@@ -268,11 +282,16 @@ Here are the primary Pydantic models used for input validation and structured LL
 - `MatchingRequest`: Contains `jd` (str) and `parsed_resume` (`Resume`).
 - `MatchingResponse`: Contains `status` (str) and `matching_percentage` (int).
 
-**`SearchJobRequest`**
-- `query` (str): Search query.
-- `country` (str): Country code.
-- `city` (Optional[str]): City name.
-- `employment_types` (List[str]): List of employment types.
-- `min_salary` (int): Minimum salary.
+### Job Search Models (`models/job_models.py`)
+
+**`SearchJobPromptRequest`**
+- `prompt` (str): Natural language prompt describing the job search.
 - `page` (int): Page number.
 - `num_pages` (int): Number of pages to fetch.
+
+**`SearchJobRequest`** (Used internally by LLM extraction)
+- `query` (str): Extracted search query.
+- `country` (str): Extracted country code.
+- `city` (Optional[str]): Extracted city name.
+- `employment_types` (List[str]): Extracted employment types.
+- `min_salary` (int): Extracted minimum salary.

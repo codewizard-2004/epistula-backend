@@ -229,18 +229,14 @@ Generates a targeted cover letter and application email based on the match resul
 ---
 
 ### Step 4: Search Jobs
-Searches for relevant jobs based on a query using the Rapid API JSearch integration.
+Searches for relevant jobs by parsing a natural language prompt using an LLM to extract parameters, then querying the Rapid API JSearch integration.
 
 * **Endpoint**: `POST /api/jobs/search`
 * **Content-Type**: `application/json`
 * **Request Payload**:
   ```json
   {
-    "query": "Software Engineer",
-    "country": "in",
-    "city": "Bangalore",
-    "employment_types": ["FULLTIME"],
-    "min_salary": 100000,
+    "prompt": "I want an IT job at Bangalore with a minimum salary of 50000 in India",
     "page": 1,
     "num_pages": 1
   }
